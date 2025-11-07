@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: rag-document-qa
+    env: docker
+    dockerfilePath: ./deployment/docker/Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    branch: main
+    
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: CHROMA_PERSIST_DIRECTORY
+        value: "/opt/render/project/src/chroma_data"
+    
+    disk:
+      name: chroma-storage
+      mountPath: /opt/render/project/src/chroma_data
+      sizeGB: 1
+    
+    healthCheckPath: /api/v1/health
+    
+    autoDeploy: true

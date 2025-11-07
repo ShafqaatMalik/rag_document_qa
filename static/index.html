@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG-Powered Document Q&A</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main Header -->
+        <header class="main-header">
+            <h2>RAG-Powered Document Q&A</h2>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>Documents</h1>
+            </div>
+            
+            <div class="upload-section">
+                <input type="file" id="fileInput" accept=".pdf,.txt,.docx,.md" hidden>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <span>Upload Document</span>
+                </button>
+                <div style="margin-top: 12px; padding: 12px; background: var(--darker-bg); border-radius: 6px; font-size: 16px; color: var(--text-light); text-align: center; line-height: 1.5;">
+                    Click documents to select/filter search
+                </div>
+            </div>
+
+            <div class="documents-list" id="documentsList">
+                <div class="loading">Loading documents...</div>
+            </div>
+
+            <!-- Chat Sessions -->
+            <div class="sidebar-header" style="border-top:1px solid var(--border-color);">
+                <h1 style="font-size:22px">Chats</h1>
+            </div>
+            <div class="sessions-list" id="sessionsList">
+                <div class="empty-state">No saved chats yet</div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message">
+                    <h3>Welcome to RAG Document Q&A</h3>
+                    <p>Upload a document to get started, then ask any questions about its content.</p>
+                    <div class="features">
+                        <div class="feature">
+                            <span class="feature-icon">📄</span>
+                            <span>PDF, TXT, DOCX, MD</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">🔍</span>
+                            <span>Semantic Search</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">🎯</span>
+                            <span>Source Citations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        id="questionInput" 
+                        placeholder="Ask a question about your documents..." 
+                        disabled
+                    >
+                    <button id="newChatBtn" class="utility-btn new-chat-btn" title="Start a new chat" disabled>
+                        New Chat
+                    </button>
+                    <button id="clearChatBtn" class="utility-btn clear-chat-btn" title="Delete this chat" disabled>
+                        Clear Chat
+                    </button>
+                    <button id="sendBtn" class="send-btn" disabled>
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    Upload a document to start asking questions
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Themed Confirm Modal -->
+    <div id="confirmOverlay" class="modal-overlay hidden" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <div class="modal-header">
+                <div id="confirmTitle" class="modal-title">Confirm</div>
+                <button class="modal-close" id="confirmClose" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="confirmMessage">Are you sure?</div>
+            </div>
+            <div class="modal-actions">
+                <button id="confirmCancel" class="modal-btn secondary">Cancel</button>
+                <button id="confirmOk" class="modal-btn primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
