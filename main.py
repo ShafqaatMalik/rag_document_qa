@@ -2,10 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.exceptions import RequestValidationError
 from src.api.routes import router
 from src.api.middleware import (
     TraceIDMiddleware,
     rag_exception_handler,
+    validation_exception_handler,
     general_exception_handler
 )
 from src.core.config import get_settings
@@ -29,14 +31,21 @@ app = FastAPI(
 app.add_middleware(TraceIDMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately in production
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        # Add your production domains here:
+        # "https://yourdomain.com",
+        # "https://app.yourdomain.com",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "DELETE"],
+    allow_headers=["Content-Type", "X-Trace-ID"],
 )
 
 # Add exception handlers
 app.add_exception_handler(RAGException, rag_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
 # Include routers

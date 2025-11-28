@@ -1,0 +1,278 @@
+FastAPI Best Practices and Development Guide
+
+=== Introduction ===
+
+FastAPI is a modern, high-performance web framework for building APIs with Python 3.7+ based on standard Python type hints. This guide covers essential best practices for production applications.
+
+=== Project Structure ===
+
+Recommended Directory Layout:
+
+project/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # Application entry point
+│   ├── dependencies.py      # Shared dependencies
+│   ├── config.py           # Configuration management
+│   ├── models/             # Pydantic models
+│   ├── routers/            # API route handlers
+│   ├── services/           # Business logic
+│   ├── database/           # Database connections
+│   └── utils/              # Helper functions
+├── tests/                  # Test files
+├── requirements.txt        # Dependencies
+└── .env                    # Environment variables
+
+=== Configuration Management ===
+
+Use Pydantic Settings for type-safe configuration:
+
+```python
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    app_name: str = "My API"
+    admin_email: str
+    database_url: str
+    secret_key: str
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+```
+
+Benefits:
+- Type validation at startup
+- Environment variable parsing
+- IDE autocompletion
+- Prevents runtime configuration errors
+
+=== Dependency Injection ===
+
+FastAPI's dependency injection system provides:
+- Shared logic across routes
+- Database session management
+- Authentication and authorization
+- Request validation
+
+Example:
+
+```python
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/users/{user_id}")
+async def read_user(user_id: int, db: Session = Depends(get_db)):
+    return db.query(User).filter(User.id == user_id).first()
+```
+
+=== Error Handling ===
+
+Custom Exception Handlers:
+
+```python
+from fastapi import HTTPException, Request
+from fastapi.responses import JSONResponse
+
+class CustomException(Exception):
+    def __init__(self, name: str):
+        self.name = name
+
+@app.exception_handler(CustomException)
+async def custom_exception_handler(request: Request, exc: CustomException):
+    return JSONResponse(
+        status_code=400,
+        content={"message": f"Error: {exc.name}"}
+    )
+```
+
+Best Practices:
+- Create custom exception classes for domain errors
+- Use appropriate HTTP status codes
+- Include helpful error messages
+- Log errors with context
+- Don't expose sensitive information in error responses
+
+=== Background Tasks ===
+
+For operations that don't need to block the response:
+
+```python
+from fastapi import BackgroundTasks
+
+def send_email(email: str, message: str):
+    # Simulated email sending
+    time.sleep(5)
+    print(f"Email sent to {email}")
+
+@app.post("/send-notification/")
+async def send_notification(email: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(send_email, email, "Welcome!")
+    return {"message": "Notification scheduled"}
+```
+
+Use Cases:
+- Sending emails
+- Processing uploaded files
+- Logging and analytics
+- Cache warming
+- Cleanup operations
+
+=== Database Best Practices ===
+
+Connection Pooling:
+- Use connection pools to reuse database connections
+- Set appropriate pool size based on load
+- Implement connection timeout and retry logic
+- Use async drivers for better performance
+
+Example with SQLAlchemy:
+
+```python
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=0,
+    pool_pre_ping=True,  # Verify connections
+    pool_recycle=3600    # Recycle after 1 hour
+)
+```
+
+Migration Strategy:
+- Use Alembic for database migrations
+- Version control all migration scripts
+- Test migrations on staging before production
+- Plan for rollback scenarios
+
+=== Security ===
+
+API Key Authentication:
+
+```python
+from fastapi.security import APIKeyHeader
+
+api_key_header = APIKeyHeader(name="X-API-Key")
+
+async def verify_api_key(api_key: str = Depends(api_key_header)):
+    if api_key != settings.api_key:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+    return api_key
+```
+
+Security Checklist:
+- Use HTTPS in production
+- Implement rate limiting
+- Validate all inputs with Pydantic
+- Use parameterized queries (prevent SQL injection)
+- Enable CORS selectively
+- Keep dependencies updated
+- Store secrets in environment variables
+- Implement proper authentication/authorization
+
+=== Performance Optimization ===
+
+Async Operations:
+- Use async/await for I/O operations
+- Leverage async database drivers
+- Implement caching for expensive operations
+- Use connection pooling
+
+Response Caching:
+
+```python
+from functools import lru_cache
+
+@lru_cache()
+def get_expensive_data():
+    # Expensive computation
+    return data
+```
+
+Database Query Optimization:
+- Use select specific fields instead of SELECT *
+- Implement pagination for large result sets
+- Add database indexes on frequently queried fields
+- Use eager loading to avoid N+1 queries
+
+=== Testing ===
+
+Structure:
+
+```python
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
+
+def test_read_main():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Hello World"}
+```
+
+Testing Best Practices:
+- Use TestClient for integration tests
+- Mock external dependencies
+- Test error cases and edge cases
+- Aim for >80% code coverage
+- Use fixtures for common setup
+- Test authentication and authorization
+- Validate response schemas
+
+=== Logging and Monitoring ===
+
+Structured Logging:
+
+```python
+import logging
+import json
+
+logger = logging.getLogger(__name__)
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(json.dumps({
+        "path": request.url.path,
+        "method": request.method,
+        "timestamp": datetime.utcnow().isoformat()
+    }))
+    response = await call_next(request)
+    return response
+```
+
+Monitoring Metrics:
+- Request count and latency
+- Error rates by endpoint
+- Database query performance
+- Memory and CPU usage
+- Active connections
+
+=== Deployment ===
+
+Production Checklist:
+- Use production ASGI server (Uvicorn with Gunicorn)
+- Set workers = (2 × CPU cores) + 1
+- Enable access logs
+- Configure proper timeouts
+- Use environment-specific settings
+- Implement health check endpoint
+- Set up log aggregation
+- Enable distributed tracing
+- Configure auto-scaling rules
+
+Docker Example:
+
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+```
+
+For more information, visit the official FastAPI documentation at https://fastapi.tiangolo.com

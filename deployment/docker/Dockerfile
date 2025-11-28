@@ -26,7 +26,10 @@ COPY --from=builder /root/.local /root/.local
 COPY src/ ./src/
 COPY static/ static/
 COPY main.py .
-COPY ../../.env .env
+
+# NOTE: .env file should NOT be copied into the image for security
+# Pass environment variables using: docker run --env-file .env rag-qa:latest
+# Or use Docker secrets/Kubernetes secrets in production
 
 # Create directory for ChromaDB
 RUN mkdir -p /app/chroma_data

@@ -1,30 +1,31 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 
 class QueryRequest(BaseModel):
     """Request schema for document queries."""
-    question: str = Field(..., min_length=1, max_length=1000)
-    top_k: int = Field(default=5, ge=1, le=20)
-    filters: Optional[Dict[str, Any]] = None
-    doc_ids: Optional[List[str]] = Field(default=None, description="Filter by specific document IDs")
-    
-    @validator('question')
-    def question_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('Question cannot be empty')
-        return v.strip()
-
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
-                "question": "A",
+                "question": "What are vector embeddings?",
                 "top_k": 5,
                 "filters": None,
                 "doc_ids": ["string"]
             }
         }
+    )
+
+    question: str = Field(..., min_length=1, max_length=1000)
+    top_k: int = Field(default=5, ge=1, le=20)
+    filters: Optional[Dict[str, Any]] = None
+    doc_ids: Optional[List[str]] = Field(default=None, description="Filter by specific document IDs")
+
+    @field_validator('question')
+    @classmethod
+    def question_not_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError('Question cannot be empty')
+        return v.strip()
 
 
 class SourceInfo(BaseModel):

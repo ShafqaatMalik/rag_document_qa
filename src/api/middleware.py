@@ -1,9 +1,9 @@
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 from src.utils.logger import setup_logger, generate_trace_id, set_trace_id, get_trace_id
 from src.utils.exceptions import RAGException
-from datetime import datetime
 
 logger = setup_logger(__name__)
 
@@ -59,12 +59,44 @@ async def rag_exception_handler(request: Request, exc: RAGException):
             "trace_id": get_trace_id()
         }}
     )
-    
+
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "error": exc.message,
             "detail": exc.details,
+            "trace_id": get_trace_id()
+        }
+    )
+
+
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle Pydantic validation errors."""
+    errors = exc.errors()
+    error_details = []
+
+    for error in errors:
+        field = " -> ".join(str(loc) for loc in error['loc'])
+        error_details.append({
+            "field": field,
+            "message": error['msg'],
+            "type": error['type']
+        })
+
+    logger.error(
+        f"Validation error: {len(errors)} field(s) failed validation",
+        extra={"extra_fields": {
+            "status_code": 422,
+            "errors": error_details,
+            "trace_id": get_trace_id()
+        }}
+    )
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error": "Validation failed",
+            "detail": error_details,
             "trace_id": get_trace_id()
         }
     )

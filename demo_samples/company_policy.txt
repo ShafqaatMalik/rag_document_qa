@@ -1,0 +1,96 @@
+ACME Corporation - Employee Handbook 2024
+
+=== Remote Work Policy ===
+
+Effective Date: January 1, 2024
+
+Eligibility:
+All full-time employees who have completed their 90-day probation period are eligible for remote work arrangements. Part-time employees may apply on a case-by-case basis with manager approval.
+
+Work Schedule:
+- Employees may work remotely up to 3 days per week
+- Core hours (10 AM - 3 PM EST) must be maintained for team collaboration
+- Employees must be available for video meetings during business hours
+- Minimum 2 days per week in office required for team collaboration
+
+Equipment and Technology:
+- Company will provide: laptop, monitor, keyboard, mouse, headset
+- Employee responsible for: stable internet connection (minimum 25 Mbps)
+- IT support available via Slack or phone during business hours
+- VPN access required for all company systems
+
+=== Time Off Policy ===
+
+Vacation Days:
+- 0-2 years of service: 15 days per year
+- 3-5 years of service: 20 days per year
+- 6+ years of service: 25 days per year
+- Vacation days accrue monthly and roll over up to 40 days maximum
+
+Sick Leave:
+- 10 days per year, unlimited rollover
+- Medical documentation required for absences exceeding 3 consecutive days
+- Can be used for personal illness or caring for immediate family members
+
+Parental Leave:
+- Primary caregiver: 16 weeks paid leave
+- Secondary caregiver: 8 weeks paid leave
+- Must be used within 12 months of birth or adoption
+- Job protection guaranteed upon return
+
+=== Professional Development ===
+
+Learning Budget:
+Each employee receives $2,000 annually for professional development, including:
+- Online courses and certifications
+- Conference attendance
+- Books and learning materials
+- Professional association memberships
+
+Conference Policy:
+- Up to 2 conferences per year with manager approval
+- Company covers: registration, travel, accommodation, meals
+- Employee must present learnings to team upon return
+
+Tuition Reimbursement:
+- Up to $10,000 per year for degree programs
+- Must be related to current role or career progression at ACME
+- Minimum 2-year commitment after completing program
+- Grade requirement: B or higher
+
+=== Health and Wellness ===
+
+Health Insurance:
+- Medical, dental, and vision coverage
+- Company pays 80% of premiums for employees
+- Family coverage available at employee cost-sharing (50/50)
+- Coverage begins on first day of employment
+
+Wellness Benefits:
+- Gym membership reimbursement: up to $50/month
+- Mental health support: 6 free counseling sessions per year through EAP
+- Annual health screening: free on-site or reimbursed
+- Standing desk stipend: $300 one-time
+
+=== Performance and Compensation ===
+
+Performance Reviews:
+- Annual reviews conducted in December
+- Mid-year check-ins in June
+- 360-degree feedback from peers, managers, and direct reports
+- Performance ratings: Exceeds Expectations, Meets Expectations, Needs Improvement
+
+Salary Adjustments:
+- Merit increases based on performance review (typically 3-7%)
+- Cost of living adjustments reviewed annually
+- Promotions may include 10-15% salary increase
+- Salary bands reviewed quarterly against market data
+
+Bonus Structure:
+- Quarterly bonuses based on company and individual performance
+- Target bonus: 10% of base salary for individual contributors
+- Target bonus: 20% of base salary for managers
+- Target bonus: 30% of base salary for directors and above
+
+For questions about these policies, contact HR at hr@acmecorp.com or extension 5000.
+Last updated: January 2024

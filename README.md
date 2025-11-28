@@ -1,211 +1,163 @@
-# RAG-Powered Document Q&A
+# RAG Document Q&A System
 
-Production-grade Retrieval-Augmented Generation (RAG) system for semantic document search and AI-powered question answering.
+## Try the Demo!
 
-## 🚀 Features
+**Recruiters:** Test this system in 5 minutes! See **[RECRUITER_SETUP.md](RECRUITER_SETUP.md)** for quick setup instructions.
 
-- **Document Processing**: Upload PDF, TXT, DOCX, and Markdown files
-- **Semantic Search**: Vector similarity search using ChromaDB
-- **AI-Powered Answers**: Context-aware responses via Google Gemini
-- **Smart Filtering**: 
-  - **Similarity Score Threshold**: Automatic filtering of low-confidence results (>0.3)
-  - **Multi-Document Query**: Target specific documents for more accurate answers
-- **Source Citations**: Answers include relevant source references with confidence scores
-- **Production-Ready**: Structured logging, error handling, health checks
-- **Containerized**: Docker support with docker-compose
-- **Cloud-Ready**: Deploy to Render or AWS EC2
-- **CI/CD**: Automated testing and deployment via GitHub Actions
+```batch
+# Windows - Quick Start
+demo_setup.bat    # One-time setup
+start_demo.bat    # Launch demo (opens browser automatically)
+```
 
-## 📋 Prerequisites
+**Sample Documents:** Ready-to-use test documents are included in the `demo_samples/` folder.
 
-- Python 3.11+
-- Google Gemini API key ([Get one here](https://makersuite.google.com/app/apikey))
-- Docker (optional, for containerized deployment)
+## Overview
+RAG Document Q&A System is a production-grade Retrieval-Augmented Generation (RAG) platform for semantic document search and question answering. It ingests unstructured documents, generates vector embeddings, retrieves the most relevant context, and produces grounded answers with source attribution. The system emphasizes reliability, observability, and deployment flexibility.
 
-## 🛠️ Quick Start
+## Quick Start
+1. **Install dependencies**: `pip install -r requirements.txt`
+2. **Configure API key**: Set `GEMINI_API_KEY` in `.env` file
+3. **Start server**: `uvicorn main:app --reload`
+4. **Open chat UI**: http://localhost:8000
+5. **View API docs**: http://localhost:8000/docs
 
-### 1. Clone and Setup
+## Features
+- Multi-format document ingestion: PDF, TXT, DOCX, Markdown
+- Vector storage and semantic search using ChromaDB
+- Contextual and accurate answer generation via Google Gemini (embeddings + LLM)
+- Similarity score thresholding and multi-document filtering
+- Source citation with confidence scoring
+- Structured logging (trace IDs) and error handling via custom exceptions and retries
+- Containerized (Dockerfile + docker-compose) for reproducible deployments
+- Automated testing (unit + integration) with coverage reporting
+- CI/CD pipelines (GitHub Actions) for build, test, and deploy automation
 
-```bash
-# Create virtual environment
+## Architecture
+FastAPI application providing REST endpoints:
+1. Ingestion: File upload, validation, chunking
+2. Embedding: Gemini embedding generation
+3. Indexing: Vectors stored in ChromaDB (persistent directory)
+4. Query: Retrieve top-k relevant chunks (threshold + filters)
+5. Synthesis: Assemble context and generate answer via LLM
+6. Response: Return answer, cited sources, and metadata
+
+Key Modules:
+- `api/`: Routing, request/response schemas, middleware
+- `rag/`: Ingestion, pipeline orchestration, retrieval logic
+- `core/`: Configuration management, LLM + embedding clients
+- `database/`: Vector store abstraction (ChromaDB)
+- `utils/`: Logging, retry strategy, custom exceptions
+
+## Data Flow
+Upload → Validation → Chunking → Embedding → Vector Store → Query → Retrieval → Answer Generation → Response
+
+## Installation
+Prerequisites: Python 3.11+, Google Gemini API key
+
+```powershell
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+./venv/Scripts/Activate.ps1
 pip install -r requirements.txt
+copy .env.example .env  # Set GEMINI_API_KEY in .env
 ```
 
-### 2. Configure Environment
+## Configuration
+Environment variables (in `.env`):
 
-```bash
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-```
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| GEMINI_API_KEY | LLM + embedding access | Required |
+| CHUNK_SIZE | Text chunk token size | 500 |
+| CHUNK_OVERLAP | Overlap between chunks | 50 |
+| TOP_K_RESULTS | Max retrieved chunks | 5 |
+| MIN_SIMILARITY_SCORE | Similarity filter threshold | 0.3 |
+| MAX_UPLOAD_SIZE | Max file size (bytes) | 10000000 |
+| LOG_LEVEL | Log verbosity | INFO |
 
-### 3. Run Locally
+## Running Locally
 
-```bash
-# Start the API server
+```powershell
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# Access the API
-# - Swagger UI: http://localhost:8000/docs
-# - ReDoc: http://localhost:8000/redoc
-# - API: http://localhost:8000/api/v1/
 ```
 
-### 4. Test the API
+## API Endpoints
 
-```bash
-# Upload a document
-curl -X POST "http://localhost:8000/api/v1/documents/upload" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/your/document.pdf"
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/documents/upload` | Upload and ingest a document |
+| GET | `/api/v1/documents` | List ingested documents |
+| DELETE | `/api/v1/documents/{doc_id}` | Delete a document |
+| POST | `/api/v1/query` | Submit a question and get answer |
+| GET | `/api/v1/health` | Health check endpoint |
 
-# Query the document
-curl -X POST "http://localhost:8000/api/v1/query" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "question": "What is this document about?",
-  "top_k": 5
-  }'
 
-# Query specific documents only (multi-document filtering)
-curl -X POST "http://localhost:8000/api/v1/query" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "question": "What are the key features?",
-  "top_k": 5,
-    "doc_ids": ["550e8400-e29b-41d4-a716-446655440000"]
-  }'
+## Testing
 
-# List all documents
-curl -X GET "http://localhost:8000/api/v1/documents"
-
-# Health check
-curl -X GET "http://localhost:8000/api/v1/health"
-```
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────┐
-│           Client (REST API)             │
-└──────────────────┬──────────────────────┘
-                   │
-┌──────────────────▼──────────────────────┐
-│         FastAPI Application             │
-│  ┌────────────────────────────────────┐ │
-│  │      RAG Pipeline                  │ │
-│  │  • Document Ingestion & Chunking   │ │
-│  │  • Semantic Search (top-k)         │ │
-│  │  • Context Assembly                │ │
-│  │  • Answer Generation               │ │
-│  └─────┬──────────────────────┬───────┘ │
-└────────┼──────────────────────┼─────────┘
-         │                      │
-    ┌────▼──────┐         ┌────▼──────────┐
-    │ ChromaDB  │         │  Gemini API   │
-    │ (Vectors) │         │  (Embeddings  │
-    │           │         │  + Generation)│
-    └───────────┘         └───────────────┘
-```
-
-## 🧪 Testing
-
-```bash
+### Unit and Integration Tests
+```powershell
 # Run all tests
-pytest tests/ -v
+pytest tests -v
 
-# Run with coverage
-pytest tests/ -v --cov=src --cov-report=html
-
-# View coverage report
-htmlcov/index.html
+# Run with coverage report
+pytest tests -v --cov=src --cov-report=html
+# View report
+start htmlcov/index.html
 ```
 
-## 🐳 Docker Deployment
+### Logging and Error Handling Tests
+Test the structured JSON logging, trace IDs, custom exceptions, and retry mechanisms:
 
-### Using Docker Compose
+```powershell
+# Automated test suite (recommended)
+python test_logging_errors.py
+```
 
+For comprehensive testing guide, see [TESTING_LOGGING_ERRORS.md](TESTING_LOGGING_ERRORS.md)
+
+## Evaluation
+
+Run comprehensive evaluation to benchmark system performance:
+```powershell
+python evaluate.py
+```
+
+This generates `evaluation_report.json` with metrics:
+- **NDCG@5**: Retrieval ranking quality (Normalized Discounted Cumulative Gain)
+- **Similarity scores**: Average relevance of retrieved documents
+- **Response time**: End-to-end latency analysis
+- **Topic coverage**: How well answers address expected topics
+- **SLA compliance**: Percentage of queries meeting the 15-second threshold
+
+## Deployment
+### Docker Compose
 ```bash
-# Build and run
-
 docker-compose -f deployment/docker/docker-compose.yml up -d
-
-# View logs
-docker-compose -f deployment/docker/docker-compose.yml logs -f
-
-# Stop
-docker-compose -f deployment/docker/docker-compose.yml down
 ```
-
-### Build Docker Image
-
+### Docker Image
 ```bash
 docker build -f deployment/docker/Dockerfile -t rag-qa:latest .
 docker run -p 8000:8000 --env-file .env rag-qa:latest
 ```
 
-## ☁️ Cloud Deployment
+### Cloud (AWS EC2)
+- Launch an Ubuntu 22.04 EC2 instance
+- Clone the repository and run `deployment/aws/ec2-setup.sh`
+- CI/CD: Use GitHub Actions for build/test/deploy
 
-### Deploy to Render (Free Tier)
-
-1. Push code to GitHub
-2. In Render Dashboard:
-   - New Web Service
-   - Connect GitHub repository
-   - Select branch: main
-   - Environment: Docker
-   - Add environment variable: GEMINI_API_KEY
-   - Deploy
-
-### Deploy to AWS EC2
-
-1. Launch EC2 Instance (t3.micro, Ubuntu 22.04)
-2. SSH into instance and run:
-
-```bash
-git clone https://github.com/yourusername/rag-document-qa.git
-cd rag-document-qa
-chmod +x deployment/aws/ec2-setup.sh
-./deployment/aws/ec2-setup.sh
+## Directory Structure
 ```
-
-## 📁 Project Structure
-
+src/
+  api/          # Routes, schemas, middleware
+  core/         # Settings, embeddings, LLM client
+  rag/          # Pipeline, ingestion, retrieval
+  database/     # Vector store wrapper (ChromaDB)
+  utils/        # Logging, exceptions, retry
+tests/          # Unit and integration tests
+deployment/     # Docker and AWS assets
+static/         # Front-end assets (chat UI)
+main.py         # FastAPI entry point
+requirements.txt
 ```
-rag-document-qa/
-├── src/
-│   ├── api/              # FastAPI routes and schemas
-│   ├── core/             # Embeddings and LLM clients
-│   ├── rag/              # RAG pipeline components
-│   ├── database/         # Vector store wrapper
-│   └── utils/            # Logging, exceptions, retry logic
-├── tests/
-│   ├── unit/             # Unit tests
-│   └── integration/      # Integration tests
-├── deployment/
-│   ├── docker/           # Docker configuration
-│   ├── render/           # Render deployment config
-│   └── aws/              # AWS EC2 setup scripts
-├── .github/workflows/    # CI/CD pipelines
-├── main.py               # Application entry point
-└── requirements.txt      # Python dependencies
-```
-
-## 🔧 Configuration
-
-Key configuration options in `.env`:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GEMINI_API_KEY` | Google Gemini API key | Required |
-| `CHUNK_SIZE` | Token size for text chunks | 500 |
-| `CHUNK_OVERLAP` | Overlap between chunks | 50 |
-| `TOP_K_RESULTS` | Number of results to retrieve | 5 |
-| `MIN_SIMILARITY_SCORE` | Minimum similarity threshold (0-1) | 0.3 |
-| `MAX_UPLOAD_SIZE` | Max file size (bytes) | 10000000 |
-| `LOG_LEVEL` | Logging level | INFO |
 
 

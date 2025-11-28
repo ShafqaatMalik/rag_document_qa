@@ -1,5 +1,4 @@
 import chromadb
-from chromadb.config import Settings as ChromaSettings
 from typing import List, Dict, Any, Optional
 from src.core.config import get_settings
 from src.utils.logger import setup_logger

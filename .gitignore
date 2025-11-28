@@ -22,6 +22,7 @@ chroma_data/
 # IDEs
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 
@@ -30,6 +31,7 @@ chroma_data/
 .coverage
 htmlcov/
 *.log
+evaluation_report.json
 
 # OS
 .DS_Store

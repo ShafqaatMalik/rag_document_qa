@@ -1,6 +1,5 @@
 import time
 from typing import Dict, Any, List, BinaryIO
-from datetime import datetime
 from src.rag.ingestion import DocumentProcessor
 from src.rag.retriever import DocumentRetriever
 from src.core.embeddings import GeminiEmbeddings
@@ -39,10 +38,10 @@ class RAGPipeline:
             
             # Process document
             doc_data = self.processor.process_file(file_content, filename)
-            
+
             # Generate embeddings for chunks
             embeddings = self.embeddings.embed_batch(doc_data['chunks'])
-            
+
             # Prepare metadata for each chunk
             metadatas = [
                 {
@@ -53,10 +52,10 @@ class RAGPipeline:
                 }
                 for i in range(len(doc_data['chunks']))
             ]
-            
+
             # Generate IDs for each chunk
             ids = [f"{doc_data['doc_id']}_chunk_{i}" for i in range(len(doc_data['chunks']))]
-            
+
             # Store in vector database
             self.vector_store.add_documents(
                 texts=doc_data['chunks'],
@@ -163,7 +162,7 @@ class RAGPipeline:
         except Exception as e:
             logger.error(f"Query failed: {str(e)}")
             raise RAGException(f"Query failed: {str(e)}")
-    
+
     def delete_document(self, doc_id: str) -> Dict[str, Any]:
         """Delete a document and all its chunks."""
         try:

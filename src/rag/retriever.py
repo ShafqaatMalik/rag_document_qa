@@ -18,13 +18,13 @@ class DocumentRetriever:
     def retrieve(
         self,
         query: str,
-        top_k: int = None,
+        top_k: Optional[int] = None,
         filters: Optional[Dict[str, Any]] = None,
         doc_ids: Optional[List[str]] = None,
-        min_score: float = None
+        min_score: Optional[float] = None
     ) -> List[Dict[str, Any]]:
         """Retrieve top-k relevant document chunks."""
-        top_k = top_k or settings.top_k_results
+        top_k = top_k if top_k is not None else settings.top_k_results
         min_score = min_score if min_score is not None else settings.min_similarity_score
         
         try:
@@ -49,7 +49,10 @@ class DocumentRetriever:
                 result for result in results['results']
                 if result['score'] >= min_score
             ]
-            
+
+            # Extract similarity scores for logging
+            similarity_scores = [round(result['score'], 4) for result in filtered_results]
+
             logger.info(
                 f"Retrieved {len(filtered_results)} chunks for query (filtered from {len(results['results'])})",
                 extra={"extra_fields": {
@@ -57,10 +60,11 @@ class DocumentRetriever:
                     "top_k": top_k,
                     "results_count": len(filtered_results),
                     "min_score": min_score,
+                    "similarity_scores": similarity_scores,
                     "filtered_doc_ids": doc_ids
                 }}
             )
-            
+
             return filtered_results
             
         except Exception as e:

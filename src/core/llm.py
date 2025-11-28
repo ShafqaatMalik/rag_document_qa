@@ -11,7 +11,7 @@ settings = get_settings()
 
 class GeminiLLM:
     """Gemini API client for text generation."""
-    
+
     def __init__(self):
         genai.configure(api_key=settings.gemini_api_key)
         self.model = genai.GenerativeModel(settings.gemini_model)
@@ -54,7 +54,7 @@ class GeminiLLM:
         except Exception as e:
             logger.error(f"Failed to generate answer: {str(e)}")
             raise GenerationError(f"Answer generation failed: {str(e)}")
-    
+
     def _build_context(self, chunks: List[Dict[str, Any]]) -> str:
         """Build context string from retrieved chunks."""
         context_parts = []

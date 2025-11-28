@@ -1,5 +1,5 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
-from typing import List
+from fastapi import APIRouter, UploadFile, File, status, Depends
+from functools import lru_cache
 from datetime import datetime
 from pathlib import Path
 from src.api.schemas import (
@@ -16,21 +16,11 @@ logger = setup_logger(__name__)
 # Create router
 router = APIRouter()
 
-# Initialize RAG pipeline (singleton)
-_rag_pipeline = None
 
-
+@lru_cache()
 def get_rag_pipeline() -> RAGPipeline:
-    """Dependency to get RAG pipeline instance."""
-    global _rag_pipeline
-    if _rag_pipeline is None:
-        _rag_pipeline = RAGPipeline()
-    return _rag_pipeline
-
-
-def get_settings_dep() -> Settings:
-    """Dependency to get settings."""
-    return get_settings()
+    """Dependency to get RAG pipeline instance (singleton)."""
+    return RAGPipeline()
 
 
 @router.post(
@@ -43,7 +33,7 @@ def get_settings_dep() -> Settings:
 async def upload_document(
     file: UploadFile = File(...),
     pipeline: RAGPipeline = Depends(get_rag_pipeline),
-    settings: Settings = Depends(get_settings_dep)
+    settings: Settings = Depends(get_settings)
 ):
     """Upload and ingest a document."""
     
@@ -84,14 +74,14 @@ async def query_documents(
     pipeline: RAGPipeline = Depends(get_rag_pipeline)
 ):
     """Query the document collection."""
-    
+
     result = pipeline.query(
         question=request.question,
         top_k=request.top_k,
         filters=request.filters,
         doc_ids=request.doc_ids
     )
-    
+
     return result
 
 
@@ -138,7 +128,7 @@ async def delete_document(
     summary="Health check",
     description="Check if the service is running"
 )
-async def health_check(settings: Settings = Depends(get_settings_dep)):
+async def health_check(settings: Settings = Depends(get_settings)):
     """Health check endpoint."""
     
     return {
