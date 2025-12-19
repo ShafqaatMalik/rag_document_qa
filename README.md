@@ -72,7 +72,7 @@ Environment variables (in `.env`):
 | CHUNK_OVERLAP | Overlap between chunks | 50 |
 | TOP_K_RESULTS | Max retrieved chunks | 5 |
 | MIN_SIMILARITY_SCORE | Similarity filter threshold | 0.3 |
-| MAX_UPLOAD_SIZE | Max file size (bytes) | 10000000 |
+| MAX_UPLOAD_SIZE | Max file size in bytes (10MB = 10000000) | 10000000 |
 | LOG_LEVEL | Log verbosity | INFO |
 
 ## Running Locally

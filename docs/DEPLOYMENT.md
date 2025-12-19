@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Complete deployment guide for various platforms.
+Complete deployment guide for Docker and AWS.
 
 ## Docker Deployment
 
@@ -10,20 +10,21 @@ Complete deployment guide for various platforms.
 docker-compose -f deployment/docker/docker-compose.yml up -d
 ```
 
-### Production
+### Production - Docker Hub
 
-Build and push to container registry:
+Build and push to Docker Hub:
 
 ```bash
-docker build -f deployment/docker/Dockerfile -t rag-qa:latest .
-docker push your-registry/rag-qa:latest
+docker build -f deployment/docker/Dockerfile -t your-username/rag-qa:latest .
+docker push your-username/rag-qa:latest
 ```
 
-## Render Deployment
+Pull and run on any server:
 
-1. Connect GitHub repository
-2. Set environment variables
-3. Deploy automatically on push
+```bash
+docker pull your-username/rag-qa:latest
+docker run -p 8000:8000 --env-file .env your-username/rag-qa:latest
+```
 
 ## AWS EC2 Deployment
 
