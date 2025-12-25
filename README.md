@@ -29,7 +29,7 @@ RAG Document Q&A System is a production-grade Retrieval-Augmented Generation (RA
 - Similarity score thresholding and multi-document filtering
 - Source citation with confidence scoring
 - Structured logging (trace IDs) and error handling via custom exceptions and retries
-- Containerized (Dockerfile + docker-compose) for reproducible deployments
+- Containerized (Docker) for reproducible deployments + AWS EC2 cloud deployment
 - Automated testing (unit + integration) with coverage reporting
 - CI/CD pipelines (GitHub Actions) for build, test, and deploy automation
 
